@@ -143,7 +143,7 @@ export default function DocsPage() {
 
           {/* Desktop Nav */}
           <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-            <a href="https://github.com/sickn33/antigravity-awesome-skills" target="_blank" rel="noopener noreferrer" style={{ ...T.navLink, display: "flex", alignItems: "center", gap: 6 }}>
+            <a href="https://github.com/frien-frozen/corelingpy" target="_blank" rel="noopener noreferrer" style={{ ...T.navLink, display: "flex", alignItems: "center", gap: 6 }}>
               GitHub <Icon.External s={12} />
             </a>
             <a href="/#pricing" style={T.navLink}>Pricing</a>
@@ -169,7 +169,7 @@ export default function DocsPage() {
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <a href="/docs" style={{ ...T.navLink, fontSize: 15 }}>Docs</a>
-            <a href="https://github.com/sickn33/antigravity-awesome-skills" target="_blank" rel="noopener noreferrer" style={{ ...T.navLink, fontSize: 15 }}>GitHub</a>
+            <a href="https://github.com/frien-frozen/corelingpy" target="_blank" rel="noopener noreferrer" style={{ ...T.navLink, fontSize: 15 }}>GitHub</a>
             <a href="/#pricing" style={{ ...T.navLink, fontSize: 15 }}>Pricing</a>
             <a href="/" style={{ ...T.btnGhost, textAlign: "center" }}>Back to Home</a>
           </div>
