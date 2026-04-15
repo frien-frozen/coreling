@@ -392,7 +392,7 @@ function InstallTerminal() {
 /* ─────────────────────────────────────────────────────────
    CONSTANTS
 ───────────────────────────────────────────────────────── */
-const GITHUB_URL = "https://github.com/sickn33/antigravity-awesome-skills";
+const GITHUB_URL = "https://github.com/frien-frozen/corelingpy";
 const DOCS_URL = "https://coreling.org/docs";
 
 /* ─────────────────────────────────────────────────────────
