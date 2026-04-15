@@ -14,6 +14,11 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Coreling — Local AI, orchestrated.",
   description: "Run multiple local LLMs in parallel. Coreling manages memory, divides tasks, and unifies your AI workflow locally.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+  },
 };
 
 export default function RootLayout({ children }) {

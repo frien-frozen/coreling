@@ -265,6 +265,137 @@ function TerminalMock() {
 }
 
 /* ─────────────────────────────────────────────────────────
+   OS DETECTION HOOK
+───────────────────────────────────────────────────────── */
+function useOS() {
+  const [os, setOs] = useState("mac");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const ua = navigator.userAgent;
+    const isAndroid = /Android/i.test(ua);
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isWindows = /Windows/i.test(ua);
+    const isLinux = /Linux/i.test(ua) && !isAndroid;
+    const isMac = /Macintosh/i.test(ua) && !isIOS;
+
+    if (isAndroid || isIOS) {
+      setIsMobile(true);
+      setOs(isAndroid ? "android" : "ios");
+    } else if (isWindows) {
+      setOs("windows");
+    } else if (isLinux) {
+      setOs("linux");
+    } else if (isMac) {
+      setOs("mac");
+    }
+  }, []);
+
+  return { os, isMobile };
+}
+
+/* ─────────────────────────────────────────────────────────
+   INSTALL TERMINAL COMPONENT
+───────────────────────────────────────────────────────── */
+function InstallTerminal() {
+  const { os, isMobile } = useOS();
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (step >= 3) return;
+    const id = setTimeout(() => setStep(s => s + 1), step === 0 ? 500 : 600);
+    return () => clearTimeout(id);
+  }, [step]);
+
+  if (isMobile) {
+    return (
+      <div style={{ background: "#000", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, overflow: "hidden", fontFamily: "'DM Mono', monospace", fontSize: 14, width: "100%", padding: "40px 28px", textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon.Bolt s={24} c="#22c55e" />
+          </div>
+        </div>
+        <h3 style={{ fontSize: 18, fontWeight: 600, color: "#fff", marginBottom: 12 }}>Coming Soon to Mobile</h3>
+        <p style={{ fontSize: 13, color: "#52525b", lineHeight: 1.7, maxWidth: 380, margin: "0 auto" }}>
+          Coreling for {os === "android" ? "Android" : "iOS"} is in development.
+          Get notified when mobile support launches.
+        </p>
+        <div style={{ marginTop: 24, display: "flex", gap: 10, justifyContent: "center" }}>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            style={{ background: "#0c0c0c", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 14px", color: "#fff", fontSize: 13, fontFamily: "'DM Mono', monospace", outline: "none", width: 220 }}
+          />
+          <button style={{ ...T.btnW, padding: "10px 18px", fontSize: 13 }}>Notify Me</button>
+        </div>
+      </div>
+    );
+  }
+
+  const isWindows = os === "windows";
+  const command = isWindows
+    ? "powershell -ExecutionPolicy Bypass -Command \"iwr https://coreling.org/install.ps1 -OutFile install.ps1; .\\install.ps1\""
+    : "curl -fsSL https://coreling.org/install.sh | sh";
+
+  const runCommand = isWindows
+    ? "coreling uni-agent --init"
+    : "coreling uni-agent --init";
+
+  const lines = [
+    { t: "info", text: isWindows ? "Detecting Windows environment..." : "Detecting macOS environment..." },
+    { t: "success", text: `✓ ${isWindows ? "Windows" : "macOS"} detected` },
+    { t: "prompt", text: command, isCommand: true },
+  ];
+
+  return (
+    <div style={{ background: "#000", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, overflow: "hidden", fontFamily: "'DM Mono', 'Fira Code', monospace", fontSize: 13, width: "100%" }}>
+      <div style={{ background: "#0c0c0c", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "11px 18px", display: "flex", alignItems: "center", gap: 7 }}>
+        {["#ff5f57","#febc2e","#28c840"].map(c => <span key={c} style={{ width: 11, height: 11, borderRadius: "50%", background: c, display: "inline-block" }} />)}
+        <span style={{ marginLeft: 12, color: "#3f3f46", fontSize: 11, fontFamily: "'DM Mono', monospace" }}>
+          coreling — {isWindows ? "powershell" : "zsh"}
+        </span>
+      </div>
+      <div style={{ padding: "20px 22px", minHeight: 180, lineHeight: 2 }}>
+        {lines.slice(0, step + 1).map((l, i) => (
+          <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}
+            style={{ display: "flex", alignItems: "flex-start", gap: 9, color: TC[l.t] }}>
+            {l.t === "prompt" && <span style={{ color: "#3f3f46", userSelect: "none", fontWeight: 300 }}>$</span>}
+            <span style={{ letterSpacing: "-0.01em", color: l.isCommand ? "#fff" : undefined }}>{l.text}</span>
+            {i === step && step < lines.length - 1 && (
+              <motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.7, repeat: Infinity }}
+                style={{ display: "inline-block", width: 7, height: 14, background: "#52525b", borderRadius: 1, marginTop: 5 }} />
+            )}
+          </motion.div>
+        ))}
+        {step >= 2 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+            style={{ marginTop: 16, paddingTop: 16, borderTop: "1px dashed rgba(255,255,255,0.08)" }}>
+            <p style={{ color: "#34d399", fontSize: 12 }}>✓ Successfully installed coreling</p>
+            <p style={{ color: "#71717a", fontSize: 11, marginTop: 8 }}>Run this to start your first agent:</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, background: "rgba(52,211,153,0.05)", padding: "8px 12px", borderRadius: 6, border: "1px solid rgba(52,211,153,0.1)" }}>
+              <span style={{ color: "#3f3f46" }}>$</span>
+              <span style={{ color: "#fff", fontFamily: "'DM Mono', monospace" }}>{runCommand}</span>
+              <button
+                onClick={() => navigator.clipboard.writeText(runCommand)}
+                style={{ marginLeft: "auto", background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", color: "#71717a", fontSize: 11 }}
+              >
+                Copy
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   CONSTANTS
+───────────────────────────────────────────────────────── */
+const GITHUB_URL = "https://github.com/sickn33/antigravity-awesome-skills";
+const DOCS_URL = "https://coreling.org/docs";
+
+/* ─────────────────────────────────────────────────────────
    DATA
 ───────────────────────────────────────────────────────── */
 const FEATURES = [
@@ -288,7 +419,7 @@ const LOGOS = ["Ollama","LM Studio","llama.cpp","Gemma 3","Llama 3.2","Mistral",
 
 const PLANS = [
   {
-    name: "Community", price: "Free", sub: "Open-source core, forever", primary: false, cta: "Download Free",
+    name: "Community", price: "Free", sub: "Open-source core, forever", primary: false, cta: "Install Free",
     features: ["Unlimited local LLM runs","Task delegation engine","Long-term local memory","CLI interface","Community support"],
   },
   {
@@ -358,14 +489,18 @@ export default function CorelingLanding() {
             <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, fontWeight: 600, letterSpacing: "-0.03em", color: "#fff" }}>coreling</span>
           </a>
           <nav style={{ display: "flex", alignItems: "center", gap: 30 }}>
-            {["Docs","GitHub","Pricing"].map(l => (
-              <a key={l} href="#" style={{ fontSize: 14, color: "#71717a", fontWeight: 400, letterSpacing: "-0.01em", transition: "color 0.15s" }}
-                onMouseEnter={e => e.target.style.color="#fff"}
-                onMouseLeave={e => e.target.style.color="#71717a"}>{l}</a>
-            ))}
+            <a href="/docs" style={{ fontSize: 14, color: "#71717a", fontWeight: 400, letterSpacing: "-0.01em", transition: "color 0.15s" }}
+              onMouseEnter={e => e.target.style.color="#fff"}
+              onMouseLeave={e => e.target.style.color="#71717a"}>Docs</a>
+            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: "#71717a", fontWeight: 400, letterSpacing: "-0.01em", transition: "color 0.15s" }}
+              onMouseEnter={e => e.target.style.color="#fff"}
+              onMouseLeave={e => e.target.style.color="#71717a"}>GitHub</a>
+            <a href="#pricing" style={{ fontSize: 14, color: "#71717a", fontWeight: 400, letterSpacing: "-0.01em", transition: "color 0.15s" }}
+              onMouseEnter={e => e.target.style.color="#fff"}
+              onMouseLeave={e => e.target.style.color="#71717a"}>Pricing</a>
           </nav>
-          <motion.a href="#" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={{ ...T.btnW, padding: "8px 18px" }}>
-            <Icon.Download s={14} c="#000" /> Download
+          <motion.a href="#install" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={{ ...T.btnW, padding: "8px 18px" }}>
+            <Icon.Download s={14} c="#000" /> Install
           </motion.a>
         </div>
       </header>
@@ -449,10 +584,10 @@ export default function CorelingLanding() {
           {/* CTAs */}
           <Reveal delay={0.19}>
             <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 80 }}>
-              <motion.a href="#" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={T.btnW}>
-                <Icon.Download s={14} c="#000" /> Download for Mac
+              <motion.a href="#install" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={T.btnW}>
+                <Icon.Download s={14} c="#000" /> Install
               </motion.a>
-              <motion.a href="#" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={T.btnG}>
+              <motion.a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={T.btnG}>
                 <Icon.GitHub s={15} c="#71717a" /> Star on GitHub <Icon.ArrowR s={13} c="#71717a" />
               </motion.a>
             </div>
@@ -577,7 +712,7 @@ export default function CorelingLanding() {
                 ))}
               </ul>
               <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                <motion.a href="https://github.com/coreling/coreling" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} style={T.btnW}>
+                <motion.a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} style={T.btnW}>
                   View on GitHub
                 </motion.a>
                 <div style={{ flex: 1, fontSize: 13, color: "#52525b", lineHeight: 1.5 }}>
@@ -605,16 +740,50 @@ export default function CorelingLanding() {
               Stop sending your most sensitive work to someone else's server. Multi-agent AI running entirely on your hardware.
             </p>
             <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-              <motion.a href="#" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={T.btnW}>
-                <Icon.Download s={14} c="#000" /> Download for Mac
+              <motion.a href="#install" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={T.btnW}>
+                <Icon.Download s={14} c="#000" /> Install
               </motion.a>
-              <motion.a href="#" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={T.btnG}>
+              <motion.a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={T.btnG}>
                 <Icon.GitHub s={15} c="#71717a" /> Star on GitHub <Icon.Ext s={12} c="#52525b" />
               </motion.a>
             </div>
           </div>
         </Reveal>
       </section>
+
+      {/* ══ INSTALL SECTION ════════════════════════════════════ */}
+      <section id="install" style={{ ...T.wrap, padding: "0 28px 120px" }}>
+        <Reveal>
+          <p style={T.eyebrow}>Installation</p>
+          <h2 style={{ ...T.h2, marginBottom: 24 }}>
+            Install Coreling
+          </h2>
+          <p style={{ fontSize: 15, color: "#52525b", maxWidth: 520, marginBottom: 40, lineHeight: 1.7 }}>
+            One command to get started. Coreling automatically detects your system and installs the appropriate version.
+          </p>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <InstallTerminal />
+        </Reveal>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginTop: 48 }}>
+          {[
+            { os: "macOS", icon: "⌘", cmd: "curl -fsSL https://coreling.org/install.sh | sh" },
+            { os: "Linux", icon: "🐧", cmd: "curl -fsSL https://coreling.org/install.sh | sh" },
+            { os: "Windows", icon: "⊞", cmd: "powershell -Command \"iwr https://coreling.org/install.ps1 -OutFile install.ps1; .\\install.ps1\"" },
+          ].map((item) => (
+            <div key={item.os} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: "20px", display: "flex", alignItems: "flex-start", gap: 14 }}>
+              <div style={{ fontSize: 20, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>{item.icon}</div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", marginBottom: 6 }}>{item.os}</p>
+                <code style={{ fontSize: 11, color: "#52525b", fontFamily: "'DM Mono', monospace", display: "block", wordBreak: "break-all" }}>{item.cmd}</code>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <hr style={T.hr} />
+
 
       {/* ══ FOOTER ════════════════════════════════════════════ */}
       <hr style={T.hr} />
