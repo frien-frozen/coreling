@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 /* ─────────────────────────────────────────────────────────
@@ -92,27 +92,19 @@ const NAV = [
     ]
   },
   {
-    section: "Core Concepts",
+    section: "Features",
     items: [
-      { id: "architecture", label: "Architecture" },
-      { id: "agents", label: "Agents" },
+      { id: "modes", label: "Engine Modes" },
       { id: "memory", label: "Memory System" },
-    ]
-  },
-  {
-    section: "Guides",
-    items: [
-      { id: "first-agent", label: "Your First Agent" },
-      { id: "multi-agent", label: "Multi-Agent Workflows" },
-      { id: "custom-tools", label: "Custom Tools" },
+      { id: "vision", label: "Image Analysis" },
     ]
   },
   {
     section: "Reference",
     items: [
-      { id: "cli", label: "CLI Reference" },
-      { id: "config", label: "Configuration" },
-      { id: "api", label: "API Reference" },
+      { id: "commands", label: "Commands" },
+      { id: "storage", label: "Storage Layout" },
+      { id: "updating", label: "Updating" },
     ]
   },
 ];
@@ -124,6 +116,20 @@ export default function DocsPage() {
   const [activeSection, setActiveSection] = useState("introduction");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  useEffect(() => {
+    const ids = NAV.flatMap(g => g.items.map(i => i.id));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      },
+      { rootMargin: "-10% 0px -80% 0px", threshold: 0 }
+    );
+    ids.forEach(id => { const el = document.getElementById(id); if (el) observer.observe(el); });
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div style={T.page}>
       <style>{`
@@ -131,6 +137,18 @@ export default function DocsPage() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         a { color: inherit; text-decoration: none; }
         ::selection { background: rgba(255,255,255,0.15); }
+        section[id] { scroll-margin-top: 80px; }
+        .docs-desktop-nav { display: flex; }
+        .docs-mobile-btn { display: none; background: none; border: none; cursor: pointer; padding: 6px; }
+        .docs-sidebar { display: block; }
+        @media (max-width: 768px) {
+          .docs-desktop-nav { display: none !important; }
+          .docs-mobile-btn { display: flex !important; align-items: center; }
+          .docs-layout { grid-template-columns: 1fr !important; }
+          .docs-sidebar { display: none !important; }
+          .docs-sidebar.open { display: block !important; position: fixed; top: 60px; left: 0; right: 0; bottom: 0; z-index: 40; background: #000; overflow-y: auto; padding: 24px; border-right: none; border-top: 1px solid rgba(255,255,255,0.08); }
+          .docs-main { padding: 24px 20px !important; }
+        }
       `}</style>
 
       {/* ══ NAVBAR ════════════════════════════════════════════ */}
@@ -142,20 +160,19 @@ export default function DocsPage() {
           </a>
 
           {/* Desktop Nav */}
-          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+          <div className="docs-desktop-nav" style={{ alignItems: "center", gap: 24 }}>
             <a href="https://github.com/frien-frozen/corelingpy" target="_blank" rel="noopener noreferrer" style={{ ...T.navLink, display: "flex", alignItems: "center", gap: 6 }}>
               GitHub <Icon.External s={12} />
             </a>
-            <a href="/#pricing" style={T.navLink}>Pricing</a>
             <a href="/" style={T.btnGhost}>Back to Home</a>
           </div>
 
           {/* Mobile Menu Button */}
           <button
+            className="docs-mobile-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{ display: "none", background: "none", border: "none", padding: 8, cursor: "pointer" }}
           >
-            {mobileMenuOpen ? <Icon.Close /> : <Icon.Menu />}
+            {mobileMenuOpen ? <Icon.Close s={22} c="#fff" /> : <Icon.Menu s={22} c="#fff" />}
           </button>
         </div>
       </nav>
@@ -168,18 +185,16 @@ export default function DocsPage() {
           style={{ position: "absolute", top: 60, left: 0, right: 0, background: "#0a0a0a", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: 20, zIndex: 40 }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <a href="/docs" style={{ ...T.navLink, fontSize: 15 }}>Docs</a>
             <a href="https://github.com/frien-frozen/corelingpy" target="_blank" rel="noopener noreferrer" style={{ ...T.navLink, fontSize: 15 }}>GitHub</a>
-            <a href="/#pricing" style={{ ...T.navLink, fontSize: 15 }}>Pricing</a>
-            <a href="/" style={{ ...T.btnGhost, textAlign: "center" }}>Back to Home</a>
+            <a href="/" style={{ ...T.btnGhost, textAlign: "center" }}>← Back to Home</a>
           </div>
         </motion.div>
       )}
 
       {/* ══ DOCS LAYOUT ════════════════════════════════════════════ */}
-      <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", maxWidth: 1200, margin: "0 auto" }}>
+      <div className="docs-layout" style={{ display: "grid", gridTemplateColumns: "260px 1fr", maxWidth: 1200, margin: "0 auto" }}>
         {/* Sidebar */}
-        <aside style={T.sidebar}>
+        <aside className={`docs-sidebar${mobileMenuOpen ? " open" : ""}`} style={T.sidebar}>
           {NAV.map(({ section, items }) => (
             <div key={section} style={T.sidebarSection}>
               <p style={T.sidebarTitle}>{section}</p>
@@ -207,20 +222,22 @@ export default function DocsPage() {
         </aside>
 
         {/* Main Content */}
-        <main style={T.main}>
+        <main className="docs-main" style={T.main}>
+
           {/* Introduction */}
           <section id="introduction">
             <p style={T.eyebrow}>Getting Started</p>
             <h1 style={T.h1}>Introduction</h1>
             <p style={T.p}>
-              Coreling is a local AI orchestration platform that runs multiple LLMs in parallel.
-              It manages memory, divides tasks, and unifies your AI workflow — all on your machine.
+              Coreling is a local AI assistant that runs entirely on your machine. It auto-downloads
+              everything it needs on first launch — no configuration, no API keys, no cloud.
             </p>
             <div style={T.note}>
-              <p style={{ ...T.noteTitle, marginBottom: 4 }}>What is Coreling?</p>
+              <p style={{ ...T.noteTitle, marginBottom: 4 }}>How it works</p>
               <p style={{ ...T.p, marginBottom: 0 }}>
-                Think of Coreling as a conductor for your local AI models. Instead of running one model at a time,
-                Coreling coordinates multiple models simultaneously, assigning each subtask to the best-suited model.
+                Coreling is a Python TUI (terminal UI). On first run it silently downloads its inference
+                engine into <code style={T.code}>~/.coreling/</code> and starts it as a background process.
+                Your conversations, memory, and model weights never leave your machine.
               </p>
             </div>
           </section>
@@ -231,23 +248,31 @@ export default function DocsPage() {
           <section id="installation">
             <p style={T.eyebrow}>Getting Started</p>
             <h2 style={T.h2}>Installation</h2>
-            <p style={T.p}>Get Coreling up and running in under 2 minutes.</p>
+            <p style={T.p}>One command. Coreling's inference engine and models are installed automatically on first run.</p>
 
             <h3 style={T.h3}>Prerequisites</h3>
             <ul style={T.ul}>
-              <li style={T.li}>Node.js 18+ installed</li>
-              <li style={T.li}>At least one local LLM backend (Ollama, LM Studio, or llama.cpp)</li>
-              <li style={T.li}>8GB+ RAM recommended for multi-model orchestration</li>
+              <li style={T.li}>Python 3.7+</li>
+              <li style={T.li}>8 GB+ RAM recommended</li>
+              <li style={T.li}>macOS, Linux, or Windows</li>
             </ul>
 
-            <h3 style={T.h3}>Install via npm</h3>
+            <h3 style={T.h3}>macOS / Linux</h3>
             <div style={T.codeBlock}>
-              <pre style={T.pre}><code>npm install -g coreling</code></pre>
+              <pre style={T.pre}><code>curl -fsSL https://coreling.org/install.sh | bash</code></pre>
             </div>
 
-            <h3 style={T.h3}>Verify installation</h3>
+            <h3 style={T.h3}>Windows (PowerShell)</h3>
             <div style={T.codeBlock}>
-              <pre style={T.pre}><code>coreling --version</code></pre>
+              <pre style={T.pre}><code>irm https://coreling.org/install.ps1 | iex</code></pre>
+            </div>
+
+            <div style={T.note}>
+              <p style={{ ...T.noteTitle, marginBottom: 4 }}>First launch</p>
+              <p style={{ ...T.p, marginBottom: 0 }}>
+                On first run Coreling downloads its inference engine (~50 MB) and an open language model (~2 GB).
+                This only happens once. Subsequent launches are instant.
+              </p>
             </div>
           </section>
 
@@ -257,61 +282,69 @@ export default function DocsPage() {
           <section id="quickstart">
             <p style={T.eyebrow}>Getting Started</p>
             <h2 style={T.h2}>Quick Start</h2>
-            <p style={T.p}>Your first multi-agent workflow in 5 steps.</p>
+            <p style={T.p}>Start a session in one command.</p>
 
             <div style={T.codeBlock}>
-              <pre style={T.pre}><code>{`# 1. Initialize a new project
-coreling init my-project
+              <pre style={T.pre}><code>coreling</code></pre>
+            </div>
 
-# 2. Configure your models
-coreling config add ollama://gemma3:4b
-coreling config add ollama://llama3.2:3b
+            <p style={T.p}>You will see an engine selection menu:</p>
+            <div style={T.codeBlock}>
+              <pre style={T.pre}><code>{`  ▶ Uni-Core    Standard   Deep reasoning
+    Multi-Core  Fast       Speed + math coprocessor`}</code></pre>
+            </div>
 
-# 3. Define your agent roles
-coreling agent create researcher --model gemma3:4b
-coreling agent create writer --model llama3.2:3b
+            <p style={T.p}>Use arrow keys to select, Enter to confirm. That is it — start chatting.</p>
 
-# 4. Create a workflow
-coreling workflow create research-paper
+            <h3 style={T.h3}>Example session</h3>
+            <div style={T.codeBlock}>
+              <pre style={T.pre}><code>{`  ❯ you  What is the time complexity of quicksort?
+  ● coreling  O(n log n) on average, O(n²) worst case.
+              Use randomized pivot to keep it fast in practice.
 
-# 5. Run your workflow
-coreling run "Research quantum computing advances in 2025"`}</code></pre>
+  ❯ you  Remember: I work in Python
+  ● coreling  Got it.
+
+  ❯ you  /exit`}</code></pre>
             </div>
           </section>
 
           <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", margin: "40px 0" }} />
 
-          {/* Architecture */}
-          <section id="architecture">
-            <p style={T.eyebrow}>Core Concepts</p>
-            <h2 style={T.h2}>Architecture</h2>
+          {/* Engine Modes */}
+          <section id="modes">
+            <p style={T.eyebrow}>Features</p>
+            <h2 style={T.h2}>Engine Modes</h2>
             <p style={T.p}>
-              Coreling uses a modular architecture designed for local-first AI orchestration.
+              Coreling offers two modes selectable at startup.
             </p>
-            <ul style={T.ul}>
-              <li style={T.li}><strong>Orchestrator:</strong> Routes tasks to optimal models based on capability and load</li>
-              <li style={T.li}><strong>Memory Layer:</strong> Persistent vector store for context across sessions</li>
-              <li style={T.li}><strong>Agent Runtime:</strong> Isolated execution environments for each agent</li>
-              <li style={T.li}><strong>Tool Registry:</strong> Pluggable tools that agents can invoke</li>
-            </ul>
-          </section>
 
-          <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", margin: "40px 0" }} />
-
-          {/* Agents */}
-          <section id="agents">
-            <p style={T.eyebrow}>Core Concepts</p>
-            <h2 style={T.h2}>Agents</h2>
+            <h3 style={T.h3}>Uni-Core</h3>
             <p style={T.p}>
-              Agents are specialized model instances configured for specific tasks.
+              Coreling's standard engine. Best for reasoning, writing, and coding.
+              This is the default and recommended mode for most tasks.
             </p>
-            <div style={T.note}>
-              <p style={{ ...T.noteTitle, marginBottom: 4 }}>Agent Best Practices</p>
-              <ul style={{ ...T.ul, marginBottom: 0 }}>
-                <li style={T.li}>Use smaller models (2-4B) for simple tasks like summarization</li>
-                <li style={T.li}>Reserve larger models (8B+) for complex reasoning</li>
-                <li style={T.li}>Give agents descriptive names for easier workflow debugging</li>
-              </ul>
+
+            <h3 style={T.h3}>Multi-Core</h3>
+            <p style={T.p}>
+              Coreling's fast engine. Routes arithmetic expressions through a deterministic
+              coprocessor — evaluated locally without going through the language model,
+              giving exact answers instead of approximations.
+            </p>
+            <div style={T.codeBlock}>
+              <pre style={T.pre}><code>{`# Multi-Core detects math automatically:
+  ❯ you  What is 1,847 × 293?
+  ● coreling  541,171`}</code></pre>
+            </div>
+
+            <h3 style={T.h3}>Vision (automatic)</h3>
+            <p style={T.p}>
+              Drop any image path into the chat — Coreling detects it, ingests the image, and
+              auto-switches to its vision model. No extra setup needed.
+            </p>
+            <div style={T.codeBlock}>
+              <pre style={T.pre}><code>{`  ❯ you  /Users/me/screenshot.png What does this show?
+  ● coreling  The image shows a Python traceback...`}</code></pre>
             </div>
           </section>
 
@@ -319,87 +352,123 @@ coreling run "Research quantum computing advances in 2025"`}</code></pre>
 
           {/* Memory System */}
           <section id="memory">
-            <p style={T.eyebrow}>Core Concepts</p>
+            <p style={T.eyebrow}>Features</p>
             <h2 style={T.h2}>Memory System</h2>
             <p style={T.p}>
-              Coreling stores context in a local vector database, enabling agents to recall
-              information across sessions and projects.
+              Memory is stored in <code style={T.code}>~/.coreling/brain.md</code> — a plain Markdown file
+              that acts as Coreling's persistent system prompt.
             </p>
             <p style={T.p}>
-              Memory is stored as plain-text SQLite + JSON files in <code style={T.code}>~/.coreling/memory</code>,
-              making it easy to inspect, backup, or version-control.
+              When you tell Coreling a fact, it silently appends a <code style={T.code}>[Learned Memory]</code> entry
+              to brain.md. The memory is injected into every future session automatically.
             </p>
-          </section>
-
-          <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", margin: "40px 0" }} />
-
-          {/* CLI Reference */}
-          <section id="cli">
-            <p style={T.eyebrow}>Reference</p>
-            <h2 style={T.h2}>CLI Reference</h2>
-            <p style={T.p}>Complete command reference for the Coreling CLI.</p>
-
-            <h3 style={T.h3}>coreling init</h3>
-            <p style={T.p}>Initialize a new Coreling project.</p>
             <div style={T.codeBlock}>
-              <pre style={T.pre}><code>{`coreling init <project-name>
-coreling init my-ai-assistant --template agent`}</code></pre>
+              <pre style={T.pre}><code>{`# brain.md (example after a few sessions)
+You are Coreling, an advanced AI orchestrator...
+
+[Learned Memory]: User works at a fintech startup
+[Learned Memory]: User prefers Python 3.12 one-liners`}</code></pre>
             </div>
-
-            <h3 style={T.h3}>coreling config</h3>
-            <p style={T.p}>Manage model configurations.</p>
-            <div style={T.codeBlock}>
-              <pre style={T.pre}><code>{`coreling config list
-coreling config add <model-url>
-coreling config remove <model-name>`}</code></pre>
-            </div>
-
-            <h3 style={T.h3}>coreling agent</h3>
-            <p style={T.p}>Create and manage agents.</p>
-            <div style={T.codeBlock}>
-              <pre style={T.pre}><code>{`coreling agent list
-coreling agent create <name> --model <model>
-coreling agent delete <name>`}</code></pre>
+            <div style={T.note}>
+              <p style={{ ...T.noteTitle, marginBottom: 4 }}>Edit it directly</p>
+              <p style={{ ...T.p, marginBottom: 0 }}>
+                <code style={T.code}>brain.md</code> is a plain text file. Open it in any editor to review,
+                edit, or delete memories manually. Use <code style={T.code}>/wipe</code> to reset it to factory defaults.
+              </p>
             </div>
           </section>
 
           <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", margin: "40px 0" }} />
 
-          {/* Configuration */}
-          <section id="config">
-            <p style={T.eyebrow}>Reference</p>
-            <h2 style={T.h2}>Configuration</h2>
-            <p style={T.p}>Configuration file reference and options.</p>
+          {/* Image Analysis */}
+          <section id="vision">
+            <p style={T.eyebrow}>Features</p>
+            <h2 style={T.h2}>Image Analysis</h2>
             <p style={T.p}>
-              Coreling uses a <code style={T.code}>config.json</code> file in your project directory.
-              Here is a complete example:
+              Paste any image file path into your message. Coreling copies it to
+              <code style={T.code}> ~/.coreling/saved/</code>, encodes it, and switches to
+              its vision model automatically — no extra command needed.
             </p>
+            <ul style={T.ul}>
+              <li style={T.li}>Supports <code style={T.code}>.png</code>, <code style={T.code}>.jpg</code>, <code style={T.code}>.jpeg</code></li>
+              <li style={T.li}>Works on macOS, Linux, and Windows paths</li>
+              <li style={T.li}>Vision model is pulled on first image use (~4 GB, one-time)</li>
+              <li style={T.li}>Session stays in vision mode for subsequent messages</li>
+            </ul>
+          </section>
+
+          <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", margin: "40px 0" }} />
+
+          {/* Commands */}
+          <section id="commands">
+            <p style={T.eyebrow}>Reference</p>
+            <h2 style={T.h2}>Commands</h2>
+
+            <h3 style={T.h3}>Launch commands</h3>
             <div style={T.codeBlock}>
-              <pre style={T.pre}><code>{`{
-  "models": [
-    {
-      "name": "gemma3",
-      "url": "http://localhost:11434",
-      "model": "gemma3:4b"
-    },
-    {
-      "name": "llama3",
-      "url": "http://localhost:11434",
-      "model": "llama3.2:3b"
-    }
-  ],
-  "memory": {
-    "enabled": true,
-    "path": "~/.coreling/memory",
-    "dimensions": 384
-  },
-  "orchestrator": {
-    "timeout": 30000,
-    "maxConcurrent": 4
-  }
-}`}</code></pre>
+              <pre style={T.pre}><code>{`coreling           # Start a new session
+coreling --update  # Update to the latest version`}</code></pre>
+            </div>
+
+            <h3 style={T.h3}>In-session commands</h3>
+            <div style={T.codeBlock}>
+              <pre style={T.pre}><code>{`/clear   # Reset conversation history (keeps brain.md)
+/wipe    # Reset brain.md to factory defaults
+/exit    # Quit Coreling`}</code></pre>
+            </div>
+
+            <div style={T.note}>
+              <p style={{ ...T.noteTitle, marginBottom: 4 }}>/clear vs /wipe</p>
+              <p style={{ ...T.p, marginBottom: 0 }}>
+                <code style={T.code}>/clear</code> resets the current conversation but keeps your learned memories.
+                <code style={T.code}> /wipe</code> erases everything in brain.md — use it to start completely fresh.
+              </p>
             </div>
           </section>
+
+          <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", margin: "40px 0" }} />
+
+          {/* Storage Layout */}
+          <section id="storage">
+            <p style={T.eyebrow}>Reference</p>
+            <h2 style={T.h2}>Storage Layout</h2>
+            <p style={T.p}>
+              Everything Coreling needs lives in <code style={T.code}>~/.coreling/</code>.
+            </p>
+            <div style={T.codeBlock}>
+              <pre style={T.pre}><code>{`~/.coreling/
+  brain.md        # system prompt + learned memories
+  corelingd       # inference engine binary (auto-downloaded)
+  artifacts/      # model weights (auto-downloaded)
+  saved/          # images you've shared in chat`}</code></pre>
+            </div>
+            <p style={T.p}>
+              To reclaim disk space, delete <code style={T.code}>~/.coreling/artifacts/</code>.
+              Models will be re-downloaded on next launch. To fully uninstall, delete the entire
+              <code style={T.code}> ~/.coreling/</code> directory and the <code style={T.code}>coreling</code> binary.
+            </p>
+          </section>
+
+          <hr style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", margin: "40px 0" }} />
+
+          {/* Updating */}
+          <section id="updating">
+            <p style={T.eyebrow}>Reference</p>
+            <h2 style={T.h2}>Updating</h2>
+            <p style={T.p}>
+              Coreling checks for updates automatically in the background. When a new version is available
+              you will see a notice at the end of your session.
+            </p>
+            <div style={T.codeBlock}>
+              <pre style={T.pre}><code>{`# Update to the latest version
+coreling --update`}</code></pre>
+            </div>
+            <p style={T.p}>
+              This re-runs the install script for your platform (macOS/Linux: bash, Windows: PowerShell).
+              Your <code style={T.code}>brain.md</code> and saved images are not affected.
+            </p>
+          </section>
+
         </main>
       </div>
     </div>

@@ -218,16 +218,16 @@ function Reveal({ children, delay = 0, style = {} }) {
    ANIMATED TERMINAL
 ───────────────────────────────────────────────────────── */
 const LINES = [
-  { t: "prompt",  text: 'coreling run --task "Refactor auth & generate tests"' },
-  { t: "info",    text: "  Analyzing complexity…" },
-  { t: "route",   text: "  analysis  →  gemma3:27b" },
-  { t: "route",   text: "  codegen   →  llama3.2:latest" },
-  { t: "model",   label: "gemma3",   text: "Scanned 1,204 lines across 23 files" },
-  { t: "model",   label: "llama3.2", text: "Generated refactored module + 18 unit tests" },
-  { t: "mem",     text: "  Memory write  ·  auth.context.v3" },
-  { t: "success", text: "  ✓  6.2 s  ·  0 bytes left your machine" },
+  { t: "prompt",  text: 'coreling' },
+  { t: "info",    text: "  · Aligning neural pathways..." },
+  { t: "success", text: "  ✓  Coreling is ready" },
+  { t: "you",     text: "Write a Python one-liner for quicksort" },
+  { t: "model",   label: "coreling", text: "✓  Saved to ./oneliner.py" },
+  { t: "you",     text: "Remember: I always prefer one-liners" },
+  { t: "mem",     text: "  brain.md  ·  memory saved" },
+  { t: "success", text: "  ✓  0 bytes left your machine" },
 ];
-const TC = { prompt:"#e4e4e7", info:"#52525b", route:"#71717a", model:"#34d399", mem:"#818cf8", success:"#34d399" };
+const TC = { prompt:"#e4e4e7", info:"#52525b", route:"#71717a", model:"#34d399", you:"#a1a1aa", mem:"#818cf8", success:"#34d399" };
 
 function TerminalMock() {
   const [n, setN] = useState(0);
@@ -247,8 +247,14 @@ function TerminalMock() {
           <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}
             style={{ display: "flex", alignItems: "flex-start", gap: 9, color: TC[l.t] }}>
             {l.t === "prompt" && <span style={{ color: "#3f3f46", userSelect: "none", fontWeight: 300 }}>$</span>}
+            {l.t === "you" && (
+              <span style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                <span style={{ color: "#34d399" }}>❯</span>
+                <span style={{ color: "#e4e4e7", fontWeight: 600, fontSize: 12 }}>you</span>
+              </span>
+            )}
             {l.label && (
-              <span style={{ background: l.label === "gemma3" ? "rgba(52,211,153,0.1)" : "rgba(129,140,248,0.1)", color: l.label === "gemma3" ? "#34d399" : "#818cf8", fontSize: 10, padding: "2px 7px", borderRadius: 5, fontWeight: 600, flexShrink: 0, marginTop: 5, letterSpacing: "0.04em" }}>
+              <span style={{ background: "rgba(52,211,153,0.1)", color: "#34d399", fontSize: 10, padding: "2px 7px", borderRadius: 5, fontWeight: 600, flexShrink: 0, marginTop: 5, letterSpacing: "0.04em" }}>
                 {l.label}
               </span>
             )}
@@ -297,90 +303,61 @@ function useOS() {
 /* ─────────────────────────────────────────────────────────
    INSTALL TERMINAL COMPONENT
 ───────────────────────────────────────────────────────── */
+function CopyButton({ text, style = {} }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1800); }}
+      style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 5, padding: "4px 10px", cursor: "pointer", color: copied ? "#34d399" : "#71717a", fontSize: 11, fontFamily: "'DM Mono', monospace", transition: "color 0.2s", flexShrink: 0, ...style }}
+    >
+      {copied ? "Copied!" : "Copy"}
+    </button>
+  );
+}
+
 function InstallTerminal() {
   const { os, isMobile } = useOS();
-  const [step, setStep] = useState(0);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (step >= 3) return;
-    const id = setTimeout(() => setStep(s => s + 1), step === 0 ? 500 : 600);
+    const id = setTimeout(() => setReady(true), 900);
     return () => clearTimeout(id);
-  }, [step]);
-
-  if (isMobile) {
-    return (
-      <div style={{ background: "#000", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, overflow: "hidden", fontFamily: "'DM Mono', monospace", fontSize: 14, width: "100%", padding: "40px 28px", textAlign: "center" }}>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Icon.Bolt s={24} c="#22c55e" />
-          </div>
-        </div>
-        <h3 style={{ fontSize: 18, fontWeight: 600, color: "#fff", marginBottom: 12 }}>Coming Soon to Mobile</h3>
-        <p style={{ fontSize: 13, color: "#52525b", lineHeight: 1.7, maxWidth: 380, margin: "0 auto" }}>
-          Coreling for {os === "android" ? "Android" : "iOS"} is in development.
-          Get notified when mobile support launches.
-        </p>
-        <div style={{ marginTop: 24, display: "flex", gap: 10, justifyContent: "center" }}>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            style={{ background: "#0c0c0c", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 14px", color: "#fff", fontSize: 13, fontFamily: "'DM Mono', monospace", outline: "none", width: 220 }}
-          />
-          <button style={{ ...T.btnW, padding: "10px 18px", fontSize: 13 }}>Notify Me</button>
-        </div>
-      </div>
-    );
-  }
+  }, []);
 
   const isWindows = os === "windows";
   const command = isWindows
-    ? "powershell -ExecutionPolicy Bypass -Command \"iwr https://coreling.org/install.ps1 -OutFile install.ps1; .\\install.ps1\""
-    : "curl -fsSL https://coreling.org/install.sh | sh";
+    ? "irm https://coreling.org/install.ps1 | iex"
+    : "curl -fsSL https://coreling.org/install.sh | bash";
 
-  const runCommand = isWindows
-    ? "coreling uni-agent --init"
-    : "coreling uni-agent --init";
-
-  const lines = [
-    { t: "info", text: isWindows ? "Detecting Windows environment..." : "Detecting macOS environment..." },
-    { t: "success", text: `✓ ${isWindows ? "Windows" : "macOS"} detected` },
-    { t: "prompt", text: command, isCommand: true },
-  ];
+  const shell = isWindows ? "powershell" : isMobile ? "terminal" : "zsh";
 
   return (
     <div style={{ background: "#000", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, overflow: "hidden", fontFamily: "'DM Mono', 'Fira Code', monospace", fontSize: 13, width: "100%" }}>
       <div style={{ background: "#0c0c0c", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "11px 18px", display: "flex", alignItems: "center", gap: 7 }}>
         {["#ff5f57","#febc2e","#28c840"].map(c => <span key={c} style={{ width: 11, height: 11, borderRadius: "50%", background: c, display: "inline-block" }} />)}
         <span style={{ marginLeft: 12, color: "#3f3f46", fontSize: 11, fontFamily: "'DM Mono', monospace" }}>
-          coreling — {isWindows ? "powershell" : "zsh"}
+          coreling — {shell}
         </span>
       </div>
-      <div style={{ padding: "20px 22px", minHeight: 180, lineHeight: 2 }}>
-        {lines.slice(0, step + 1).map((l, i) => (
-          <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}
-            style={{ display: "flex", alignItems: "flex-start", gap: 9, color: TC[l.t] }}>
-            {l.t === "prompt" && <span style={{ color: "#3f3f46", userSelect: "none", fontWeight: 300 }}>$</span>}
-            <span style={{ letterSpacing: "-0.01em", color: l.isCommand ? "#fff" : undefined }}>{l.text}</span>
-            {i === step && step < lines.length - 1 && (
-              <motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.7, repeat: Infinity }}
-                style={{ display: "inline-block", width: 7, height: 14, background: "#52525b", borderRadius: 1, marginTop: 5 }} />
-            )}
-          </motion.div>
-        ))}
-        {step >= 2 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-            style={{ marginTop: 16, paddingTop: 16, borderTop: "1px dashed rgba(255,255,255,0.08)" }}>
-            <p style={{ color: "#34d399", fontSize: 12 }}>✓ Successfully installed coreling</p>
-            <p style={{ color: "#71717a", fontSize: 11, marginTop: 8 }}>Run this to start your first agent:</p>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, background: "rgba(52,211,153,0.05)", padding: "8px 12px", borderRadius: 6, border: "1px solid rgba(52,211,153,0.1)" }}>
-              <span style={{ color: "#3f3f46" }}>$</span>
-              <span style={{ color: "#fff", fontFamily: "'DM Mono', monospace" }}>{runCommand}</span>
-              <button
-                onClick={() => navigator.clipboard.writeText(runCommand)}
-                style={{ marginLeft: "auto", background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 4, padding: "4px 8px", cursor: "pointer", color: "#71717a", fontSize: 11 }}
-              >
-                Copy
-              </button>
+      <div style={{ padding: "20px 22px", minHeight: 160, lineHeight: 2 }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}
+          style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
+          <span style={{ color: "#3f3f46", userSelect: "none", fontWeight: 300, flexShrink: 0 }}>$</span>
+          <span style={{ color: "#fff", letterSpacing: "-0.01em", wordBreak: "break-all" }}>{command}</span>
+          {!ready && (
+            <motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.7, repeat: Infinity }}
+              style={{ display: "inline-block", width: 7, height: 14, background: "#52525b", borderRadius: 1, marginTop: 5, flexShrink: 0 }} />
+          )}
+        </motion.div>
+
+        {ready && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
+            style={{ marginTop: 18, paddingTop: 16, borderTop: "1px dashed rgba(255,255,255,0.07)" }}>
+            <p style={{ color: "#34d399", fontSize: 12, marginBottom: 12 }}>✓ Coreling installed successfully</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(52,211,153,0.04)", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(52,211,153,0.12)" }}>
+              <span style={{ color: "#3f3f46", flexShrink: 0 }}>$</span>
+              <span style={{ color: "#fff", fontFamily: "'DM Mono', monospace", flex: 1 }}>coreling</span>
+              <CopyButton text="coreling" />
             </div>
           </motion.div>
         )}
@@ -399,23 +376,23 @@ const DOCS_URL = "https://coreling.org/docs";
    DATA
 ───────────────────────────────────────────────────────── */
 const FEATURES = [
-  { Ic: Icon.Fork,    title: "Task Delegation",   desc: "Coreling's router analyzes complexity, domain, and compute — then assigns each subtask to the best local model. Zero config.", tag: "Orchestration" },
-  { Ic: Icon.Memory,  title: "Unified Memory",     desc: "A persistent local vector store enriches every session. Context survives restarts, model switches, and project changes.", tag: "Memory" },
-  { Ic: Icon.Shield,  title: "100% Local",         desc: "Zero telemetry. Zero cloud calls. Every prompt, completion, and memory artifact stays on-device. Fully air-gap compatible.", tag: "Privacy" },
-  { Ic: Icon.Mesh,    title: "Model Mesh",         desc: "Run Gemma 3, Llama 3.2, Mistral, and Phi-3 in parallel as a single unified agent — not isolated chatbots.", tag: "Multi-model" },
-  { Ic: Icon.Bolt,    title: "Sub-50ms Routing",   desc: "The Coreling orchestrator adds less than 50 ms overhead. Multi-agent intelligence at native local inference speed.", tag: "Performance" },
-  { Ic: Icon.Storage, title: "Plain-text Storage", desc: "Task history, memory graphs, and configs stored as SQLite + JSON on disk. Export, inspect, or version-control everything.", tag: "Transparent" },
+  { Ic: Icon.Bolt,    title: "Zero Setup",          desc: "One install command. Coreling auto-downloads everything it needs on first launch. No config, no API keys, no prerequisites.", tag: "Instant" },
+  { Ic: Icon.Memory,  title: "Persistent Memory",   desc: "Tell it something once — it silently writes to brain.md and remembers forever. Context survives restarts and sessions.", tag: "Memory" },
+  { Ic: Icon.Shield,  title: "100% Local",          desc: "Zero telemetry. Zero cloud calls. Every prompt, completion, and memory artifact stays on-device. Fully air-gap compatible.", tag: "Privacy" },
+  { Ic: Icon.Mesh,    title: "Vision Built-in",     desc: "Drop any image path into chat. Coreling auto-switches to its vision model — no extra commands or model management needed.", tag: "Multimodal" },
+  { Ic: Icon.Fork,    title: "Dual Engine Modes",   desc: "Uni-Core for deep reasoning and coding. Multi-Core for speed — with a deterministic math coprocessor for exact answers.", tag: "Modes" },
+  { Ic: Icon.Storage, title: "Plain-text Storage",  desc: "Everything lives in ~/.coreling/ as ordinary files. Brain, models, history — inspect, edit, or wipe with a single command.", tag: "Transparent" },
 ];
 
 const STEPS = [
-  { Ic: Icon.Terminal,  n: "01", title: "Input",          desc: "Natural language task" },
-  { Ic: Icon.Fork,      n: "02", title: "Task Splitter",  desc: "Decomposes into subtasks" },
-  { Ic: Icon.Cpu,       n: "03", title: "Local LLMs",     desc: "Best model per subtask" },
-  { Ic: Icon.Database,  n: "04", title: "Memory DB",      desc: "Context written locally" },
-  { Ic: Icon.Spark,     n: "05", title: "Output",         desc: "Unified coherent result" },
+  { Ic: Icon.Terminal,  n: "01", title: "Run",           desc: "Type coreling to start" },
+  { Ic: Icon.Bolt,      n: "02", title: "Auto-Setup",    desc: "Engine downloads silently" },
+  { Ic: Icon.Fork,      n: "03", title: "Pick Mode",     desc: "Uni-Core or Multi-Core" },
+  { Ic: Icon.Memory,    n: "04", title: "Chat",          desc: "It learns and remembers" },
+  { Ic: Icon.Shield,    n: "05", title: "Private",       desc: "0 bytes leave your machine" },
 ];
 
-const LOGOS = ["Ollama","LM Studio","llama.cpp","Gemma 3","Llama 3.2","Mistral","Phi-3","Qwen 2.5"];
+const LOGOS = ["macOS","Linux","Windows","Air-gapped","No API Key","No Cloud","Open Models","Private by Default","On-device AI","Zero Telemetry"];
 
 const PLANS = [
   {
@@ -450,6 +427,7 @@ const T = {
 export default function CorelingLanding() {
   const [scrolled, setScrolled] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 8);
@@ -471,6 +449,25 @@ export default function CorelingLanding() {
         @keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-50%) } }
         a { color: inherit; text-decoration: none; }
         ::selection { background: rgba(255,255,255,0.15); }
+        .desktop-nav { display: flex; }
+        .mobile-menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 6px; color: #fff; }
+        .mobile-nav-drawer { display: none; }
+        @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .mobile-menu-btn { display: flex !important; align-items: center; justify-content: center; }
+          .mobile-nav-drawer { display: flex; flex-direction: column; gap: 20px; position: fixed; top: 62px; left: 0; right: 0; background: rgba(0,0,0,0.97); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 28px; z-index: 49; }
+          .features-grid { grid-template-columns: 1fr !important; }
+          .steps-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 32px !important; }
+          .steps-line { display: none !important; }
+          .install-grid { grid-template-columns: 1fr !important; }
+          .privacy-inner { flex-direction: column !important; gap: 20px !important; padding: 28px !important; }
+          .cta-inner { padding: 50px 24px !important; }
+          .hero-section { padding: 100px 20px 60px !important; }
+          .section-wrap { padding-left: 20px !important; padding-right: 20px !important; }
+        }
+        @media (max-width: 480px) {
+          .steps-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       {/* ══ NAVBAR ════════════════════════════════════════════ */}
@@ -488,25 +485,43 @@ export default function CorelingLanding() {
             <CorelingLogo size={22} color="#fff" />
             <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, fontWeight: 600, letterSpacing: "-0.03em", color: "#fff" }}>coreling</span>
           </a>
-          <nav style={{ display: "flex", alignItems: "center", gap: 30 }}>
+          <nav className="desktop-nav" style={{ alignItems: "center", gap: 30 }}>
             <a href="/docs" style={{ fontSize: 14, color: "#71717a", fontWeight: 400, letterSpacing: "-0.01em", transition: "color 0.15s" }}
               onMouseEnter={e => e.target.style.color="#fff"}
               onMouseLeave={e => e.target.style.color="#71717a"}>Docs</a>
             <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: "#71717a", fontWeight: 400, letterSpacing: "-0.01em", transition: "color 0.15s" }}
               onMouseEnter={e => e.target.style.color="#fff"}
               onMouseLeave={e => e.target.style.color="#71717a"}>GitHub</a>
-            <a href="#pricing" style={{ fontSize: 14, color: "#71717a", fontWeight: 400, letterSpacing: "-0.01em", transition: "color 0.15s" }}
+            <a href="#install" style={{ fontSize: 14, color: "#71717a", fontWeight: 400, letterSpacing: "-0.01em", transition: "color 0.15s" }}
               onMouseEnter={e => e.target.style.color="#fff"}
-              onMouseLeave={e => e.target.style.color="#71717a"}>Pricing</a>
+              onMouseLeave={e => e.target.style.color="#71717a"}>Install</a>
           </nav>
-          <motion.a href="#install" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} style={{ ...T.btnW, padding: "8px 18px" }}>
+          <motion.a href="#install" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} className="desktop-nav" style={{ ...T.btnW, padding: "8px 18px" }}>
             <Icon.Download s={14} c="#000" /> Install
           </motion.a>
+          <button className="mobile-menu-btn" onClick={() => setMobileNavOpen(v => !v)} aria-label="Menu">
+            {mobileNavOpen
+              ? <svg width={22} height={22} viewBox="0 0 20 20" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></svg>
+              : <svg width={22} height={22} viewBox="0 0 20 20" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"><line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/></svg>
+            }
+          </button>
         </div>
       </header>
 
+      {/* ══ MOBILE NAV DRAWER ════════════════════════════════ */}
+      {mobileNavOpen && (
+        <div className="mobile-nav-drawer">
+          <a href="/docs" style={{ fontSize: 16, color: "#a1a1aa" }} onClick={() => setMobileNavOpen(false)}>Docs</a>
+          <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" style={{ fontSize: 16, color: "#a1a1aa" }} onClick={() => setMobileNavOpen(false)}>GitHub</a>
+          <a href="#install" style={{ fontSize: 16, color: "#a1a1aa" }} onClick={() => setMobileNavOpen(false)}>Install</a>
+          <a href="#install" style={{ ...T.btnW, justifyContent: "center" }} onClick={() => setMobileNavOpen(false)}>
+            <Icon.Download s={14} c="#000" /> Install Free
+          </a>
+        </div>
+      )}
+
       {/* ══ HERO ══════════════════════════════════════════════ */}
-      <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "80px 28px 80px", overflow: "hidden" }}>
+      <section className="hero-section" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "80px 28px 80px", overflow: "hidden" }}>
         {/* Moving Background Spotlight */}
         <motion.div
           animate={{
@@ -600,7 +615,7 @@ export default function CorelingLanding() {
 
           <Reveal delay={0.34}>
             <p style={{ marginTop: 22, fontSize: 11, color: "#3f3f46", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'DM Mono', monospace" }}>
-              Compatible with Ollama · LM Studio · llama.cpp
+              Private · Air-gapped · Open
             </p>
           </Reveal>
         </div>
@@ -627,7 +642,7 @@ export default function CorelingLanding() {
           </h2>
         </Reveal>
         {/* Bento — 1px separator lines via gap:1 on colored container */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "rgba(255,255,255,0.055)", border: "1px solid rgba(255,255,255,0.055)", borderRadius: 18, overflow: "hidden" }}>
+        <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "rgba(255,255,255,0.055)", border: "1px solid rgba(255,255,255,0.055)", borderRadius: 18, overflow: "hidden" }}>
           {FEATURES.map((f, i) => (
             <Reveal key={f.title} delay={i * 0.04}>
               <SpotlightCard style={{ padding: "32px 28px", height: "100%", cursor: "default" }}>
@@ -652,8 +667,8 @@ export default function CorelingLanding() {
             <span style={T.dim}>Many models. One output.</span>
           </h2>
         </Reveal>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 0, position: "relative" }}>
-          <div style={{ position: "absolute", top: 26, left: "8%", right: "8%", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07) 20%, rgba(255,255,255,0.07) 80%, transparent)", pointerEvents: "none" }} />
+        <div className="steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 0, position: "relative" }}>
+          <div className="steps-line" style={{ position: "absolute", top: 26, left: "8%", right: "8%", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.07) 20%, rgba(255,255,255,0.07) 80%, transparent)", pointerEvents: "none" }} />
           {STEPS.map((st, i) => (
             <Reveal key={st.title} delay={i * 0.07}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "0 10px" }}>
@@ -672,7 +687,7 @@ export default function CorelingLanding() {
       {/* ══ PRIVACY BANNER ════════════════════════════════════ */}
       <section style={{ ...T.wrap, padding: "0 28px 100px" }}>
         <Reveal>
-          <div style={{ border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: "38px 46px", display: "flex", alignItems: "center", gap: 38, flexWrap: "wrap" }}>
+          <div className="privacy-inner" style={{ border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: "38px 46px", display: "flex", alignItems: "center", gap: 38, flexWrap: "wrap" }}>
             <div style={T.iconBox}><Icon.Lock s={20} c="#fff" /></div>
             <div style={{ flex: 1, minWidth: 200 }}>
               <h3 style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.03em", color: "#fff", marginBottom: 8 }}>Zero cloud. Zero exposure.</h3>
@@ -705,7 +720,7 @@ export default function CorelingLanding() {
                 </div>
               </div>
               <ul style={{ listStyle: "none", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", marginBottom: 40 }}>
-                {["Unlimited local runs","Multi-model orchestration","Private vector memory","CLI & REST API"].map(f => (
+                {["Unlimited local runs","Persistent memory (brain.md)","Image analysis (vision)","Dual engine modes"].map(f => (
                   <li key={f} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#a1a1aa" }}>
                     <Icon.Check s={14} c="#22c55e" /> {f}
                   </li>
@@ -765,17 +780,20 @@ export default function CorelingLanding() {
         <Reveal delay={0.1}>
           <InstallTerminal />
         </Reveal>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginTop: 48 }}>
+        <div className="install-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginTop: 48 }}>
           {[
-            { os: "macOS", icon: "⌘", cmd: "curl -fsSL https://coreling.org/install.sh | sh" },
-            { os: "Linux", icon: "🐧", cmd: "curl -fsSL https://coreling.org/install.sh | sh" },
-            { os: "Windows", icon: "⊞", cmd: "powershell -Command \"iwr https://coreling.org/install.ps1 -OutFile install.ps1; .\\install.ps1\"" },
+            { os: "macOS", icon: "⌘", cmd: "curl -fsSL https://coreling.org/install.sh | bash" },
+            { os: "Linux", icon: "🐧", cmd: "curl -fsSL https://coreling.org/install.sh | bash" },
+            { os: "Windows", icon: "⊞", cmd: "irm https://coreling.org/install.ps1 | iex" },
           ].map((item) => (
-            <div key={item.os} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: "20px", display: "flex", alignItems: "flex-start", gap: 14 }}>
-              <div style={{ fontSize: 20, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>{item.icon}</div>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff", marginBottom: 6 }}>{item.os}</p>
-                <code style={{ fontSize: 11, color: "#52525b", fontFamily: "'DM Mono', monospace", display: "block", wordBreak: "break-all" }}>{item.cmd}</code>
+            <div key={item.os} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: "18px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <span style={{ fontSize: 18 }}>{item.icon}</span>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{item.os}</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 7, padding: "8px 12px" }}>
+                <code style={{ fontSize: 11, color: "#a1a1aa", fontFamily: "'DM Mono', monospace", flex: 1, wordBreak: "break-all", lineHeight: 1.5 }}>{item.cmd}</code>
+                <CopyButton text={item.cmd} />
               </div>
             </div>
           ))}
