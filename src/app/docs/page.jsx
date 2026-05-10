@@ -115,6 +115,7 @@ const NAV = [
 export default function DocsPage() {
   const [activeSection, setActiveSection] = useState("introduction");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [tocOpen, setTocOpen] = useState(false);
 
   useEffect(() => {
     const ids = NAV.flatMap(g => g.items.map(i => i.id));
@@ -140,14 +141,30 @@ export default function DocsPage() {
         section[id] { scroll-margin-top: 80px; }
         .docs-desktop-nav { display: flex; }
         .docs-mobile-btn { display: none; background: none; border: none; cursor: pointer; padding: 6px; }
-        .docs-sidebar { display: block; }
+        .docs-toc-btn { display: none; }
+        .docs-sidebar-close { display: none; }
+        .docs-backdrop { display: none; }
         @media (max-width: 768px) {
           .docs-desktop-nav { display: none !important; }
           .docs-mobile-btn { display: flex !important; align-items: center; }
           .docs-layout { grid-template-columns: 1fr !important; }
-          .docs-sidebar { display: none !important; }
-          .docs-sidebar.open { display: block !important; position: fixed; top: 60px; left: 0; right: 0; bottom: 0; z-index: 40; background: #000; overflow-y: auto; padding: 24px; border-right: none; border-top: 1px solid rgba(255,255,255,0.08); }
-          .docs-main { padding: 24px 20px !important; }
+          .docs-sidebar {
+            display: none !important;
+            position: fixed !important;
+            top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+            height: 100dvh !important;
+            z-index: 50 !important;
+            background: #080808 !important;
+            overflow-y: auto !important;
+            padding: 20px 24px 40px !important;
+            border-right: none !important;
+            border-bottom: none !important;
+          }
+          .docs-sidebar.open { display: block !important; }
+          .docs-sidebar-close { display: flex !important; align-items: center; gap: 8px; background: none; border: none; color: #71717a; font-size: 13px; cursor: pointer; padding: 0 0 20px 0; font-family: 'DM Sans', sans-serif; }
+          .docs-toc-btn { display: flex !important; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #a1a1aa; font-size: 13px; cursor: pointer; padding: 10px 16px; border-radius: 8px; font-family: 'DM Sans', sans-serif; margin-bottom: 28px; width: 100%; }
+          .docs-backdrop { display: block !important; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 49; backdrop-filter: blur(4px); }
+          .docs-main { padding: 28px 20px 60px !important; }
         }
       `}</style>
 
@@ -194,7 +211,11 @@ export default function DocsPage() {
       {/* ══ DOCS LAYOUT ════════════════════════════════════════════ */}
       <div className="docs-layout" style={{ display: "grid", gridTemplateColumns: "260px 1fr", maxWidth: 1200, margin: "0 auto" }}>
         {/* Sidebar */}
-        <aside className={`docs-sidebar${mobileMenuOpen ? " open" : ""}`} style={T.sidebar}>
+        <aside className={`docs-sidebar${tocOpen ? " open" : ""}`} style={T.sidebar}>
+          <button className="docs-sidebar-close" onClick={() => setTocOpen(false)}>
+            <svg width={16} height={16} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></svg>
+            Close
+          </button>
           {NAV.map(({ section, items }) => (
             <div key={section} style={T.sidebarSection}>
               <p style={T.sidebarTitle}>{section}</p>
@@ -205,6 +226,7 @@ export default function DocsPage() {
                   onClick={(e) => {
                     e.preventDefault();
                     setActiveSection(id);
+                    setTocOpen(false);
                     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
                   style={{
@@ -221,8 +243,17 @@ export default function DocsPage() {
           ))}
         </aside>
 
+        {/* Backdrop for mobile TOC */}
+        {tocOpen && <div className="docs-backdrop" onClick={() => setTocOpen(false)} />}
+
         {/* Main Content */}
         <main className="docs-main" style={T.main}>
+
+          {/* Mobile Contents button */}
+          <button className="docs-toc-btn" onClick={() => setTocOpen(true)}>
+            <svg width={15} height={15} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="12" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/></svg>
+            Contents
+          </button>
 
           {/* Introduction */}
           <section id="introduction">
