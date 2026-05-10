@@ -307,6 +307,7 @@ function CopyButton({ text, style = {} }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
+      className="copy-btn-print-hide"
       onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1800); }}
       style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 5, padding: "4px 10px", cursor: "pointer", color: copied ? "#34d399" : "#71717a", fontSize: 11, fontFamily: "'DM Mono', monospace", transition: "color 0.2s", flexShrink: 0, ...style }}
     >
@@ -467,6 +468,11 @@ export default function CorelingLanding() {
         }
         @media (max-width: 480px) {
           .steps-grid { grid-template-columns: 1fr !important; }
+        }
+        @media print {
+          .copy-btn-print-hide { display: none !important; }
+          .install-terminal-print-hide { display: none !important; }
+          footer a[href="#"] { pointer-events: none; }
         }
       `}</style>
 
@@ -778,7 +784,17 @@ export default function CorelingLanding() {
           </p>
         </Reveal>
         <Reveal delay={0.1}>
-          <InstallTerminal />
+          <div className="install-terminal-print-hide">
+            <InstallTerminal />
+          </div>
+          {/* Static version shown only in print */}
+          <div style={{ display: "none" }} className="print-install-static">
+            <div style={{ background: "#000", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, padding: "20px 24px", fontFamily: "'DM Mono', monospace", fontSize: 13 }}>
+              <div style={{ color: "#3f3f46", marginBottom: 10 }}>$ <span style={{ color: "#fff" }}>curl -fsSL https://coreling.org/install.sh | bash</span></div>
+              <div style={{ color: "#34d399" }}>✓ Coreling installed successfully</div>
+              <div style={{ marginTop: 10, color: "#3f3f46" }}>$ <span style={{ color: "#fff" }}>coreling</span></div>
+            </div>
+          </div>
         </Reveal>
         <div className="install-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginTop: 48 }}>
           {[

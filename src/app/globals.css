@@ -17,3 +17,90 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* ── PRINT / POSTER ─────────────────────────────────────── */
+@media print {
+  /* Force all background colors and images to print */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Kill animations & transitions */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0s !important;
+  }
+
+  html, body {
+    background: #000 !important;
+    color: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Hide nav, sticky header, mobile chrome, copy buttons, footer links */
+  header,
+  .mobile-nav-drawer,
+  .mobile-menu-btn {
+    display: none !important;
+  }
+
+  /* Undo sticky/fixed so nav doesn't eat page space */
+  header {
+    position: static !important;
+  }
+
+  /* Add top padding to compensate for hidden nav */
+  .hero-section {
+    padding-top: 60px !important;
+  }
+
+  /* No orphan sections — keep each card together */
+  section,
+  .features-grid > *,
+  .steps-grid > * {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Keep feature bento 3-col on print */
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    display: grid !important;
+  }
+
+  /* Keep steps row on print */
+  .steps-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    display: grid !important;
+  }
+
+  /* Keep install cards in a row */
+  .install-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    display: grid !important;
+  }
+
+  /* Show static install block, hide animated terminal */
+  .install-terminal-print-hide { display: none !important; }
+  .print-install-static { display: block !important; }
+
+  /* Keep steps line visible */
+  .steps-line {
+    display: block !important;
+  }
+
+  /* Terminal blocks — keep together */
+  div[style*="DM Mono"] {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
