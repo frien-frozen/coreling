@@ -139,7 +139,7 @@ if ($userPath -notmatch [regex]::Escape($CDir)) {
 }
 
 Write-Host "Coreling v$Version installed. Open a new terminal and run: coreling" -ForegroundColor Green
-Write-Host "Local models (Spark / Chat / Pro) download on first use via /model." -ForegroundColor DarkGray
+Write-Host "Local models (Spark / Chat / Pro) download on first /model — runtime setup is automatic." -ForegroundColor DarkGray
 
 $CloudEnv = Join-Path $CDir "cloud.env"
 if (-not (Test-Path $CloudEnv)) {
