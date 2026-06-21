@@ -46,7 +46,7 @@ const Icon = {
    STYLES
 ───────────────────────────────────────────────────────── */
 const T = {
-  page: { background: "#000", minHeight: "100vh", fontFamily: "'DM Sans', sans-serif" },
+  page: { background: "#000", minHeight: "100vh", fontFamily: "'DM Sans', sans-serif", overflowX: "hidden" },
   nav: { position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.8)", backdropFilter: "blur(12px)" },
   navInner: { maxWidth: 1200, margin: "0 auto", padding: "0 28px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 },
   logoLink: { display: "flex", alignItems: "center", gap: 10, color: "#fff" },
@@ -58,7 +58,7 @@ const T = {
 
   docsLayout: { display: "grid", gridTemplateColumns: "260px 1fr", maxWidth: 1200, margin: "0 auto" },
   sidebar: { position: "sticky", top: 60, height: "calc(100vh - 60px)", overflowY: "auto", padding: "32px 24px", borderRight: "1px solid rgba(255,255,255,0.06)" },
-  main: { padding: "40px 40px" },
+  main: { padding: "40px 40px", minWidth: 0, overflowX: "hidden" },
 
   sidebarTitle: { fontSize: 11, color: "#52525b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16, fontWeight: 600 },
   sidebarSection: { marginBottom: 28 },
@@ -69,12 +69,12 @@ const T = {
   h1: { fontSize: 42, fontWeight: 700, color: "#fff", letterSpacing: "-0.03em", marginBottom: 16, lineHeight: 1.1 },
   h2: { fontSize: 26, fontWeight: 600, color: "#fff", letterSpacing: "-0.02em", marginBottom: 14, marginTop: 40 },
   h3: { fontSize: 18, fontWeight: 600, color: "#e4e4e7", marginBottom: 10, marginTop: 28 },
-  p: { fontSize: 15, color: "#a1a1aa", lineHeight: 1.7, marginBottom: 16 },
-  code: { background: "rgba(255,255,255,0.05)", padding: "2px 6px", borderRadius: 4, fontSize: "0.9em", fontFamily: "'DM Mono', monospace", color: "#f4f4f5" },
-  codeBlock: { background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: 20, overflowX: "auto", marginBottom: 20 },
-  pre: { margin: 0, fontSize: 13, fontFamily: "'DM Mono', monospace", color: "#e4e4e7", lineHeight: 1.6 },
+  p: { fontSize: 15, color: "#a1a1aa", lineHeight: 1.7, marginBottom: 16, overflowWrap: "break-word", wordBreak: "break-word" },
+  code: { background: "rgba(255,255,255,0.05)", padding: "2px 6px", borderRadius: 4, fontSize: "0.9em", fontFamily: "'DM Mono', monospace", color: "#f4f4f5", wordBreak: "break-all" },
+  codeBlock: { background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: 20, overflowX: "auto", marginBottom: 20, maxWidth: "100%" },
+  pre: { margin: 0, fontSize: 13, fontFamily: "'DM Mono', monospace", color: "#e4e4e7", lineHeight: 1.6, whiteSpace: "pre-wrap", wordBreak: "break-word" },
   ul: { paddingLeft: 20, color: "#a1a1aa", marginBottom: 16 },
-  li: { marginBottom: 8, lineHeight: 1.6 },
+  li: { marginBottom: 8, lineHeight: 1.6, overflowWrap: "break-word" },
   note: { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: 16, marginBottom: 20 },
   noteTitle: { fontSize: 13, fontWeight: 600, color: "#fff", marginBottom: 6 },
 };
@@ -279,7 +279,7 @@ export default function DocsPage() {
           <section id="installation">
             <p style={T.eyebrow}>Getting Started</p>
             <h2 style={T.h2}>Installation</h2>
-            <p style={T.p}>One command. Coreling's inference engine and models are installed automatically on first run.</p>
+            <p style={T.p}>One command installs Coreling v2. Requires Node.js 22+. Local models download on first use via <code style={T.code}>/model</code>.</p>
 
             <h3 style={T.h3}>Prerequisites</h3>
             <ul style={T.ul}>

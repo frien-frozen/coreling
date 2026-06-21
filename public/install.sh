@@ -37,14 +37,25 @@ echo -e "${CY}⚡ Installing Coreling v${VERSION}...${R}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "${TMP}"' EXIT
 
-if ! curl -fsSL "${URL}" -o "${TMP}/${ARCHIVE}"; then
-  echo -e "${RD}Download failed.${R}"
-  echo -e "${DM}Expected release asset:${R} ${URL}"
-  echo -e "${DM}Publish v${VERSION} to GitHub first (see openclaude/scripts/package-release.sh).${R}"
+echo -e "${DM}Downloading release…${R}"
+if command -v curl >/dev/null 2>&1; then
+  if ! curl -fL --progress-bar "${URL}" -o "${TMP}/${ARCHIVE}"; then
+    echo -e "\n${RD}Download failed.${R}"
+    echo -e "${DM}Expected release asset:${R} ${URL}"
+    exit 1
+  fi
+  echo ""
+elif command -v wget >/dev/null 2>&1; then
+  if ! wget -q --show-progress -O "${TMP}/${ARCHIVE}" "${URL}"; then
+    echo -e "${RD}Download failed.${R}"
+    exit 1
+  fi
+else
+  echo -e "${RD}Need curl or wget to download Coreling.${R}"
   exit 1
 fi
 
-rm -rf "${APP_DIR:?}"/*
+echo -e "${DM}Extracting…${R}"
 tar -xzf "${TMP}/${ARCHIVE}" -C "${TMP}"
 EXTRACTED="${TMP}/coreling-v${VERSION}"
 if [ ! -d "${EXTRACTED}" ]; then
@@ -53,6 +64,13 @@ if [ ! -d "${EXTRACTED}" ]; then
 fi
 cp -R "${EXTRACTED}/." "${APP_DIR}/"
 chmod +x "${APP_DIR}/bin/coreling"
+echo -e "${GN}✓ Coreling app files installed${R}"
+
+if [ ! -d "${APP_DIR}/node_modules" ]; then
+  echo -e "${DM}Installing runtime dependencies (this may take a minute)…${R}"
+  (cd "${APP_DIR}" && npm install --omit=dev --no-audit --no-fund --ignore-scripts)
+  echo -e "${GN}✓ Dependencies ready${R}"
+fi
 
 # `coreling` on PATH — replaces old v1 binary at the same path
 ln -sf "${APP_DIR}/bin/coreling" "${C_DIR}/coreling"
